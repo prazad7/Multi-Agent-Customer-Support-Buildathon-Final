@@ -43,18 +43,13 @@ st.set_page_config(
 # =========================================================
 
 st.markdown(
-    """
-    <style>
-
+    """<style>
     /* =====================================================
        GLOBAL APPLICATION & TYPOGRAPHY
        ===================================================== */
-
     .stApp {
-        background: radial-gradient(circle at 15% 5%, rgba(91, 78, 220, 0.15), transparent 35%),
-                    radial-gradient(circle at 85% 10%, rgba(0, 198, 255, 0.10), transparent 30%),
-                    linear-gradient(135deg, #070c17 0%, #091121 50%, #060c17 100%);
-        color: #f5f7ff;
+        background: #FAF3E8;
+        color: #1a1a1a;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -64,20 +59,19 @@ st.markdown(
         height: 8px;
     }
     ::-webkit-scrollbar-track {
-        background: #070c17;
+        background: #FAF3E8;
     }
     ::-webkit-scrollbar-thumb {
-        background: #1f293d;
+        background: #d8cbb0;
         border-radius: 4px;
     }
 
     /* =====================================================
        SIDEBAR
        ===================================================== */
-
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0e1326 0%, #0a0d1d 100%);
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        background: #F3E9D8;
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
     }
 
     section[data-testid="stSidebar"] > div:first-child {
@@ -87,16 +81,16 @@ st.markdown(
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3 {
-        color: #ffffff;
+        color: #1a1a1a;
         font-weight: 700;
         letter-spacing: -0.5px;
     }
 
     /* Inputs */
     section[data-testid="stSidebar"] input {
-        background-color: #121829 !important;
-        color: #f5f7ff !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
         border-radius: 8px !important;
         padding: 10px 14px !important;
     }
@@ -122,7 +116,6 @@ st.markdown(
         box-shadow: 0 6px 18px rgba(84, 70, 220, 0.45) !important;
     }
 
-    /* Secondary "New User" Button Styling */
     /* Secondary CTA Button (Matching Primary Palette) */
     section[data-testid="stSidebar"] button[kind="secondary"] {
         border-radius: 8px !important;
@@ -143,7 +136,6 @@ st.markdown(
     /* =====================================================
        MAIN CONTENT CONTAINER
        ===================================================== */
-
     .main .block-container {
         padding-top: 2.5rem;
         padding-bottom: 4rem;
@@ -153,7 +145,6 @@ st.markdown(
     /* =====================================================
        HEADER COMPONENT
        ===================================================== */
-
     .qe-header-container {
         display: flex;
         align-items: center;
@@ -178,16 +169,14 @@ st.markdown(
         font-size: 32px;
         font-weight: 800;
         letter-spacing: -0.8px;
-        background: linear-gradient(90deg, #ffffff 30%, #a5b4fc 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #1a1a1a;
         margin: 0;
         line-height: 1.2;
     }
 
     .qe-subtitle-text {
         font-size: 16px;
-        color: #94a3b8;
+        color: #4b4b4b;
         margin-top: 4px;
         margin-bottom: 24px;
     }
@@ -195,7 +184,6 @@ st.markdown(
     /* =====================================================
        INFORMATION BANNER
        ===================================================== */
-
     .info-banner {
         display: flex;
         align-items: center;
@@ -203,9 +191,9 @@ st.markdown(
         padding: 16px 20px;
         margin: 16px 0 28px 0;
         border-radius: 12px;
-        background: rgba(30, 41, 59, 0.5);
+        background: rgba(255, 255, 255, 0.6);
         border: 1px solid rgba(99, 116, 255, 0.2);
-        color: #cbd5e1;
+        color: #1a1a1a;
         font-size: 15px;
         backdrop-filter: blur(8px);
     }
@@ -219,7 +207,7 @@ st.markdown(
         justify-content: center;
         border-radius: 50%;
         background: rgba(99, 116, 255, 0.2);
-        color: #818cf8;
+        color: #4f5df5;
         font-weight: 700;
         font-size: 14px;
     }
@@ -227,12 +215,12 @@ st.markdown(
     /* =====================================================
        CHAT & CARDS
        ===================================================== */
-
     div[data-testid="stChatMessage"] {
-        background-color: rgba(15, 23, 42, 0.6) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
         border-radius: 12px !important;
         margin-bottom: 12px !important;
+        color: #1a1a1a !important;
     }
 
     div[data-testid="stChatInput"] {
@@ -240,9 +228,9 @@ st.markdown(
     }
 
     div[data-testid="stChatInput"] textarea {
-        background-color: #0f172a !important;
-        color: #f8fafc !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
         border-radius: 10px !important;
     }
 
@@ -253,24 +241,22 @@ st.markdown(
 
     /* Metrics & Expanders */
     div[data-testid="stMetric"] {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 10px;
         padding: 12px 16px;
     }
 
     div[data-testid="stExpander"] {
         border-radius: 10px !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        background: rgba(15, 23, 42, 0.4) !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        background: rgba(255, 255, 255, 0.5) !important;
     }
 
     hr {
-        border-color: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
     }
-
-    </style>
-    """,
+    </style>""",
     unsafe_allow_html=True,
 )
 
@@ -287,7 +273,6 @@ logger = logging.getLogger("qe_streamlit")
 # =========================================================
 
 def initialize_session_state():
-
     if "user_email" not in st.session_state:
         st.session_state.user_email = ""
 
@@ -306,6 +291,9 @@ def initialize_session_state():
     if "processing" not in st.session_state:
         st.session_state.processing = False
 
+    if "show_past_history" not in st.session_state:
+        st.session_state.show_past_history = False
+
 
 initialize_session_state()
 
@@ -315,13 +303,11 @@ initialize_session_state()
 # =========================================================
 
 def is_valid_email(email: str) -> bool:
-
     pattern = (
         r"^[A-Za-z0-9._%+-]+"
         r"@[A-Za-z0-9.-]+\."
         r"[A-Za-z]{2,}$"
     )
-
     return bool(re.match(pattern, email))
 
 
@@ -330,44 +316,21 @@ def is_valid_email(email: str) -> bool:
 # =========================================================
 
 def load_customer_session(user_email: str):
-
     normalized_email = normalize_email(user_email)
 
-    if (
-        st.session_state.memory_loaded_for
-        == normalized_email
-    ):
+    if st.session_state.memory_loaded_for == normalized_email:
         return
 
-    history = load_customer_conversation(
-        normalized_email
-    )
+    history = load_customer_conversation(normalized_email)
 
     st.session_state.user_email = normalized_email
-
     st.session_state.conversation_history = history
-
     st.session_state.memory_loaded_for = normalized_email
 
+    # FIX Issue 1: Reset active messages, metrics, and view states for new user
     st.session_state.messages = []
-
-    for message in history:
-
-        role = message.get("role")
-
-        content = message.get(
-            "content",
-            "",
-        )
-
-        if role in ("user", "assistant"):
-
-            st.session_state.messages.append(
-                {
-                    "role": role,
-                    "content": content,
-                }
-            )
+    st.session_state.last_result = None
+    st.session_state.show_past_history = False
 
 
 # =========================================================
@@ -375,19 +338,13 @@ def load_customer_session(user_email: str):
 # =========================================================
 
 def new_user_session():
-
     st.session_state.user_email = ""
-
     st.session_state.conversation_history = []
-
     st.session_state.memory_loaded_for = ""
-
     st.session_state.messages = []
-
     st.session_state.last_result = None
-
     st.session_state.processing = False
-
+    st.session_state.show_past_history = False
     st.rerun()
 
 
@@ -396,8 +353,7 @@ def new_user_session():
 # =========================================================
 
 with st.sidebar:
-
-    st.header("Welcome Amigo! 👋")
+    st.header("Welcome, Champ! 👋")
 
     email_input = st.text_input(
         "Email address",
@@ -410,31 +366,15 @@ with st.sidebar:
         use_container_width=True,
         type="primary",
     ):
-
         email_input = email_input.strip()
 
         if not email_input:
-
-            st.error(
-                "Email address cannot be empty."
-            )
-
+            st.error("Email address cannot be empty.")
         elif not is_valid_email(email_input):
-
-            st.error(
-                "Please enter a valid email address."
-            )
-
+            st.error("Please enter a valid email address.")
         else:
-
-            load_customer_session(
-                email_input
-            )
-
-            st.success(
-                "Customer memory loaded."
-            )
-
+            load_customer_session(email_input)
+            st.success("Customer memory loaded.")
             st.rerun()
 
     if st.button(
@@ -444,23 +384,38 @@ with st.sidebar:
     ):
         new_user_session()
 
+    if st.session_state.user_email:
+        past_query_label = (
+            "Hide Past Query"
+            if st.session_state.show_past_history
+            else "View Past Query"
+        )
+
+        if st.button(
+            past_query_label,
+            use_container_width=True,
+            type="secondary",
+        ):
+            st.session_state.show_past_history = (
+                not st.session_state.show_past_history
+            )
+            st.rerun()
+
 
 # =========================================================
 # MAIN HEADER
 # =========================================================
 
 st.markdown(
-    """
-    <div class="qe-header-container">
+    """<div class="qe-header-container">
         <div class="qe-avatar">🤖</div>
         <div>
             <div class="qe-title-text">QE Support Agent</div>
         </div>
     </div>
     <div class="qe-subtitle-text">
-        Your AI companion for QE questions, test support, and verified answers.
-    </div>
-    """,
+        Your AI companion for your API related questions with verified answers.
+    </div>""",
     unsafe_allow_html=True,
 )
 
@@ -470,443 +425,246 @@ st.markdown(
 # =========================================================
 
 if not st.session_state.user_email:
-
     st.markdown(
-        """
-        <div class="info-banner">
+        """<div class="info-banner">
             <div class="info-icon">i</div>
             <div>
                 Enter your email address in the sidebar to start a conversation with the QE Support Agent.
             </div>
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True,
     )
-
     st.stop()
 
 
 # =========================================================
-# CHAT MESSAGES
+# PAST QUERY HISTORY (shown only when show_past_history is True)
 # =========================================================
 
-for message in st.session_state.messages:
-
-    role = message.get("role")
-
-    content = message.get(
-        "content",
-        "",
-    )
-
-    with st.chat_message(role):
-
-        st.markdown(content)
-
-
-# =========================================================
-# QUESTION INPUT
-# =========================================================
-
-user_query = st.chat_input(
-    "Ask your QE question..."
-)
-
-
-# =========================================================
-# PROCESS QUESTION
-# =========================================================
-
-if user_query:
-
-    user_query = user_query.strip()
-
-    if not user_query:
-
-        st.warning(
-            "Question cannot be empty."
-        )
-
-        st.stop()
-
-
-    # -----------------------------------------------------
-    # Prevent Duplicate Execution
-    # -----------------------------------------------------
-
-    if st.session_state.processing:
-
-        st.warning(
-            "A request is already being processed."
-        )
-
-        st.stop()
-
-
-    st.session_state.processing = True
-
-
-    # -----------------------------------------------------
-    # Add User Message
-    # -----------------------------------------------------
-
-    st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": user_query,
-        }
-    )
-
-    with st.chat_message("user"):
-
-        st.markdown(user_query)
-
-
-    # -----------------------------------------------------
-    # Generate Request ID
-    # -----------------------------------------------------
-
-    request_id = generate_request_id()
-
-
-    # -----------------------------------------------------
-    # Execute Support System
-    # -----------------------------------------------------
-
-    try:
-
-        with st.chat_message("assistant"):
-
-            with st.status(
-                "Processing your request...",
-                expanded=False,
-            ):
-
-                result = run_support_crew(
-
-                    user_query=user_query,
-
-                    user_email=(
-                        st.session_state.user_email
-                    ),
-
-                    request_id=request_id,
-
-                    conversation_history=(
-                        st.session_state.conversation_history
-                    ),
-                )
-
-
-        # -------------------------------------------------
-        # Result
-        # -------------------------------------------------
-
-        status = result.get(
-            "status",
-            "UNKNOWN",
-        )
-
-        agent3_output = (
-            result.get("agent3_output")
-            or {}
-        )
-
-
-        # -------------------------------------------------
-        # VERIFIED RESPONSE
-        # -------------------------------------------------
-
-        if status == "VERIFIED":
-
-            final_answer = agent3_output.get(
-                "final_answer",
-                "No final answer was generated.",
-            )
-
-            confidence = agent3_output.get(
-                "confidence",
-                0,
-            )
-
-            sources = agent3_output.get(
-                "sources",
-                [],
-            )
-
-
-            # ---------------------------------------------
-            # Display Answer
-            # ---------------------------------------------
-
-            with st.chat_message("assistant"):
-
-                st.markdown(final_answer)
-
-                st.caption(
-                    f"Confidence: {confidence}%"
-                )
-
-
-                # -----------------------------------------
-                # Sources
-                # -----------------------------------------
-
-                if sources:
-
-                    with st.expander("Sources"):
-
-                        for source in sources:
-
-                            st.write(source)
-
-
-            # ---------------------------------------------
-            # Update Conversation
-            # ---------------------------------------------
-
-            st.session_state.conversation_history.append(
-                {
-                    "role": "user",
-                    "content": user_query,
-                }
-            )
-
-            st.session_state.conversation_history.append(
-                {
-                    "role": "assistant",
-                    "content": final_answer,
-                }
-            )
-
-
-            max_messages = (
-                MAX_CONVERSATION_TURNS * 2
-            )
-
-            st.session_state.conversation_history = (
-                st.session_state.conversation_history[
-                    -max_messages:
-                ]
-            )
-
-
-            # ---------------------------------------------
-            # Save Assistant Message
-            # ---------------------------------------------
-
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": final_answer,
-                }
-            )
-
-
-        # -------------------------------------------------
-        # UNABLE TO VERIFY
-        # -------------------------------------------------
-
-        else:
-
-            error_message = (
-                "I could not verify this answer "
-                "with sufficient confidence."
-            )
-
-            with st.chat_message("assistant"):
-
-                st.warning(error_message)
-
-                st.caption(
-                    f"Request ID: {request_id}"
-                )
-
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": error_message,
-                }
-            )
-
-
-        # -------------------------------------------------
-        # Save Last Result
-        # -------------------------------------------------
-
-        st.session_state.last_result = result
-
-
-    except Exception as exc:
-
-        logger.exception(
-            "Streamlit request failed: %s",
-            exc,
-        )
-
-        with st.chat_message("assistant"):
-
-            st.error(
-                "An unexpected error occurred "
-                "while processing your request."
-            )
-
-            st.caption(
-                f"Request ID: {request_id}"
-            )
-
-        st.session_state.last_result = {
-            "request_id": request_id,
-            "status": "FAILED",
-            "error": str(exc),
-        }
-
-
-    finally:
-
-        st.session_state.processing = False
-
-
-# =========================================================
-# LAST REQUEST DETAILS
-# =========================================================
-
-if st.session_state.last_result:
-
-    result = st.session_state.last_result
-
+if st.session_state.show_past_history:
+    st.subheader("Past Query History")
+
+    if not st.session_state.conversation_history:
+        st.info("No past conversation history found for this customer.")
+    else:
+        for message in st.session_state.conversation_history:
+            role = message.get("role")
+            content = message.get("content", "")
+
+            with st.chat_message(role):
+                st.markdown(content)
+    
     st.divider()
 
-    st.subheader("Latest Request")
+# FIX Issue 2: Hide main active workspace and queries when Hide Past Query is selected
+else:
 
-    col1, col2, col3, col4 = st.columns(4)
+    # =========================================================
+    # CHAT MESSAGES
+    # =========================================================
+
+    for message in st.session_state.messages:
+        role = message.get("role")
+        content = message.get("content", "")
+
+        with st.chat_message(role):
+            st.markdown(content)
 
 
-    with col1:
+    # =========================================================
+    # QUESTION INPUT
+    # =========================================================
 
-        st.metric(
-            "Request ID",
-            result.get(
-                "request_id",
-                "N/A",
-            ),
+    user_query = st.chat_input("Ask your QE question...")
+
+
+    # =========================================================
+    # PROCESS QUESTION
+    # =========================================================
+
+    if user_query:
+        user_query = user_query.strip()
+
+        if not user_query:
+            st.warning("Question cannot be empty.")
+            st.stop()
+
+        # Prevent Duplicate Execution
+        if st.session_state.processing:
+            st.warning("A request is already being processed.")
+            st.stop()
+
+        st.session_state.processing = True
+
+        # Add User Message
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": user_query,
+            }
         )
 
+        with st.chat_message("user"):
+            st.markdown(user_query)
 
-    with col2:
+        request_id = generate_request_id()
 
-        st.metric(
-            "Status",
-            result.get(
-                "status",
-                "N/A",
-            ),
-        )
+        # Execute Support System
+        try:
+            with st.chat_message("assistant"):
+                with st.status(
+                    "Processing your request...",
+                    expanded=False,
+                ):
+                    result = run_support_crew(
+                        user_query=user_query,
+                        user_email=st.session_state.user_email,
+                        request_id=request_id,
+                        conversation_history=st.session_state.conversation_history,
+                    )
 
+            status = result.get("status", "UNKNOWN")
+            agent3_output = result.get("agent3_output") or {}
 
-    with col3:
+            # VERIFIED RESPONSE
+            if status == "VERIFIED":
+                final_answer = agent3_output.get(
+                    "final_answer",
+                    "No final answer was generated.",
+                )
+                confidence = agent3_output.get("confidence", 0)
+                sources = agent3_output.get("sources", [])
 
-        st.metric(
-            "Web Attempts",
-            result.get(
-                "web_search_attempts",
-                0,
-            ),
-        )
+                with st.chat_message("assistant"):
+                    st.markdown(final_answer)
+                    st.caption(f"Confidence: {confidence}%")
 
+                    if sources:
+                        with st.expander("Sources"):
+                            for source in sources:
+                                st.write(source)
 
-    with col4:
-
-        email_sent = result.get(
-            "email_sent",
-            False,
-        )
-
-        st.metric(
-            "Email Sent",
-            "Yes" if email_sent else "No",
-        )
-
-
-    # -----------------------------------------------------
-    # Performance
-    # -----------------------------------------------------
-
-    performance = result.get(
-        "performance",
-        {},
-    )
-
-    if performance:
-
-        with st.expander(
-            "Performance Metrics"
-        ):
-
-            performance_rows = []
-
-            for name, value in performance.items():
-
-                performance_rows.append(
+                st.session_state.conversation_history.append(
                     {
-                        "Stage": name,
-                        "Time (seconds)": round(
-                            value,
-                            2,
-                        ),
+                        "role": "user",
+                        "content": user_query,
                     }
                 )
 
-            st.dataframe(
-                performance_rows,
-                use_container_width=True,
-                hide_index=True,
-            )
-
-
-    # -----------------------------------------------------
-    # Agent 1 Output
-    # -----------------------------------------------------
-
-    with st.expander("Agent 1 Output"):
-
-        st.code(
-            str(
-                result.get(
-                    "agent1_output",
-                    "N/A",
+                st.session_state.conversation_history.append(
+                    {
+                        "role": "assistant",
+                        "content": final_answer,
+                    }
                 )
-            )
-        )
 
-
-    # -----------------------------------------------------
-    # Agent 2 Output
-    # -----------------------------------------------------
-
-    with st.expander("Agent 2 Output"):
-
-        st.code(
-            str(
-                result.get(
-                    "agent2_output",
-                    "N/A",
+                max_messages = MAX_CONVERSATION_TURNS * 2
+                st.session_state.conversation_history = (
+                    st.session_state.conversation_history[-max_messages:]
                 )
-            )
-        )
+
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": final_answer,
+                    }
+                )
+
+            # UNABLE TO VERIFY
+            else:
+                error_message = (
+                    "I could not verify this answer with sufficient confidence."
+                )
+
+                with st.chat_message("assistant"):
+                    st.warning(error_message)
+                    st.caption(f"Request ID: {request_id}")
+
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": error_message,
+                    }
+                )
+
+            st.session_state.last_result = result
+
+        except Exception as exc:
+            logger.exception("Streamlit request failed: %s", exc)
+
+            with st.chat_message("assistant"):
+                st.error("An unexpected error occurred while processing your request.")
+                st.caption(f"Request ID: {request_id}")
+
+            st.session_state.last_result = {
+                "request_id": request_id,
+                "status": "FAILED",
+                "error": str(exc),
+            }
+
+        finally:
+            st.session_state.processing = False
 
 
-    # -----------------------------------------------------
-    # Agent 3 Output
-    # -----------------------------------------------------
+    # =========================================================
+    # LAST REQUEST DETAILS
+    # =========================================================
 
-    with st.expander(
-        "Agent 3 Final Output"
-    ):
+    if st.session_state.last_result:
+        result = st.session_state.last_result
+        st.divider()
 
-        st.json(
-            result.get(
-                "agent3_output",
-                {},
-            )
-        )
+        # Performance
+        performance = result.get("performance", {})
+
+        if performance:
+            with st.expander("Performance Metrics"):
+                faiss_time = performance.get("FAISS retrieval", 0)
+                agent2_time = performance.get("Initial Crew workflow", 0)
+
+                for name, value in performance.items():
+                    if name.startswith("Web search + verification"):
+                        agent2_time += value
+
+                agent3_time = performance.get("Agent 3", 0)
+                email_time = performance.get("Email", 0)
+                total_time = performance.get("total", 0)
+
+                performance_rows = [
+                    {
+                        "Stage": "Agent 1 - FAISS Retrieval",
+                        "Time (seconds)": round(faiss_time, 2),
+                    },
+                    {
+                        "Stage": "Agent 2 - Agent 1 Output + Web Search",
+                        "Time (seconds)": round(agent2_time, 2),
+                    },
+                    {
+                        "Stage": "Agent 3 - Consolidation",
+                        "Time (seconds)": round(agent3_time, 2),
+                    },
+                    {
+                        "Stage": "Email",
+                        "Time (seconds)": round(email_time, 2),
+                    },
+                    {
+                        "Stage": "Total",
+                        "Time (seconds)": round(total_time, 2),
+                    },
+                ]
+
+                st.dataframe(
+                    performance_rows,
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+        # Agent Outputs
+        with st.expander("Agent 1: Knowledge Assistant"):
+            st.code(str(result.get("agent1_output", "N/A")))
+
+        with st.expander("Agent 2: Web Research Specialist"):
+            st.code(str(result.get("agent2_output", "N/A")))
+
+        with st.expander("Agent 3: Support Response Specialist"):
+            st.json(result.get("agent3_output", {}))

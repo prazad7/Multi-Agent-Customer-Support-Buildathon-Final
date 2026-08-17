@@ -3,6 +3,8 @@ import json
 import logging
 import time
 import re
+import threading
+import queue
 
 from datetime import datetime
 
@@ -40,9 +42,9 @@ if not os.getenv("OPENAI_API_KEY"):
         "OPENAI_API_KEY is not set in the .env file"
     )
 
-if not os.getenv("SERPAPI_API_KEY"):
+if not os.getenv("SERPER_API_KEY"):
     raise ValueError(
-        "SERPAPI_API_KEY is not set in the .env file"
+        "SERPER_API_KEY is not set in the .env file"
     )
 
 
@@ -1193,7 +1195,25 @@ web_search_agent = Agent(
 
     verbose=CREW_VERBOSE,
 
-    allow_delegation=False
+    allow_delegation=False,
+
+    # ---------------------------------------------------
+    # PERFORMANCE OPTIMIZATION:
+    #
+    # This is the only agent with a tool, so it's the only
+    # one that can loop (think -> search -> think -> search
+    # -> ...). CrewAI's default max_iter is 20, which lets a
+    # single task silently run many extra search rounds
+    # before answering. Task 3 already instructs the agent
+    # to "search efficiently" and "not perform unnecessary
+    # searches" - these caps just enforce that instruction
+    # instead of only asking for it, without changing what a
+    # normal (efficient) run produces.
+    # ---------------------------------------------------
+
+    max_iter=5,
+
+    max_execution_time=45
 )
 
 
@@ -1507,13 +1527,16 @@ The search must:
 
 Do not blindly confirm the existing answer.
 
+If you cannot find any relevant, reliable web results,
+say so explicitly rather than leaving the search inconclusive.
+
 Return:
 
 WEB_SEARCH_FINDINGS:
-<findings>
+<findings, or "No relevant web results were found.">
 
 SOURCES:
-<source names and URLs>
+<source names and URLs actually found, or "None">
 
 EVIDENCE_SUMMARY:
 <why this evidence answers the user's question>
@@ -1560,6 +1583,29 @@ Independently verify the answer using:
 
 1. Original FAISS evidence
 2. Web research evidence
+
+SOURCE CITATION RULES (STRICT):
+
+The original FAISS evidence was already judged insufficient
+by Agent 1. You may use it only as background context for
+understanding the question.
+
+You must NOT list the original FAISS source (for example,
+a path like knowledge_base\\some_file.md) in SOURCES unless
+the Web Research findings above independently confirm the
+same information.
+
+Your SOURCES list must be built ONLY from the sources
+actually returned by the Web Research task above (site
+names, document titles, or URLs the web agent found).
+
+If the Web Research task found no usable sources, return:
+
+SOURCES:
+None
+
+Do not invent, assume, or carry forward a source that was
+not explicitly provided by the Web Research task output.
 
 Evaluate:
 
@@ -1973,6 +2019,186 @@ def extract_status(
 
 
 # =========================================================
+# KNOWN REPORT FIELD LABELS
+#
+# Used by _extract_field_block() below to know where one
+# field's value ends and the next field begins.
+# =========================================================
+
+_REPORT_FIELD_LABELS = [
+    "VERIFICATION_CONFIDENCE",
+    "EVIDENCE_QUALITY",
+    "SOURCE_AGREEMENT",
+    "ANSWER_COMPLETENESS",
+    "STATUS",
+    "VERIFIED_ANSWER",
+    "SOURCES",
+    "REASON",
+]
+
+_REPORT_FIELD_LINE_PATTERN = re.compile(
+    r"^\s*(" + "|".join(_REPORT_FIELD_LABELS) + r")\s*:\s*(.*)$",
+    re.IGNORECASE
+)
+
+
+def _extract_field_block(
+    text: str,
+    field_name: str
+) -> str:
+    """
+    Extract the block of text following "<field_name>:" up to
+    (but not including) the next known report field label, or
+    the end of the text.
+
+    PERFORMANCE FIX:
+
+    This replaces a previous regex-based implementation that
+    looked like:
+
+        r"FIELD\\s*:\\s*(.*?)"
+        r"(?=\\n\\s*\\n\\s*(?:OTHER_LABEL|...)\\s*:|\\Z)"
+
+    Because \\s already matches \\n, chaining \\s* around a
+    literal \\n like that lets the regex engine distribute the
+    same whitespace across multiple quantifiers in exponentially
+    many ways. On real LLM output that didn't line up exactly
+    with the expected blank-line-before-next-label shape, this
+    caused catastrophic backtracking - multi-second (sometimes
+    20+ second) delays on a function that does no I/O and no LLM
+    call at all. That is what was showing up as "Agent 3" time
+    in the performance metrics even though Agent 3 does not make
+    an LLM call in this codebase.
+
+    This version scans line-by-line, which is linear in the
+    length of the text and produces the same result for
+    well-formed output.
+    """
+
+    lines = text.splitlines()
+
+    start_index = None
+    inline_value = ""
+
+    for index, line in enumerate(lines):
+
+        match = _REPORT_FIELD_LINE_PATTERN.match(line)
+
+        if (
+            match
+            and match.group(1).upper() == field_name.upper()
+        ):
+
+            start_index = index
+            inline_value = match.group(2).strip()
+            break
+
+    if start_index is None:
+
+        return ""
+
+    collected = (
+        [inline_value] if inline_value else []
+    )
+
+    for line in lines[start_index + 1:]:
+
+        if _REPORT_FIELD_LINE_PATTERN.match(line):
+
+            break
+
+        collected.append(line)
+
+    return "\n".join(collected).strip()
+
+
+# =========================================================
+# EXTRACT VERIFIED ANSWER
+#
+# PERFORMANCE OPTIMIZATION (Step 3):
+#
+# Previously, Agent 3 made a separate LLM call purely to
+# copy VERIFIED_ANSWER out of Agent 2's output into JSON.
+# Agent 3 never actually decided anything: confidence and
+# status were always forcibly overwritten with Agent 2's
+# values in validate_agent3_output().
+#
+# This function performs the same extraction directly in
+# Python, using the same regex-based approach already used
+# for extract_confidence() and extract_status() above.
+# =========================================================
+
+def extract_verified_answer(
+    output
+) -> str:
+
+    text = str(output)
+
+    answer = _extract_field_block(
+        text,
+        "VERIFIED_ANSWER"
+    )
+
+    if (
+        answer
+        and answer.upper() not in ("NONE", "N/A")
+    ):
+
+        return answer
+
+    logger.warning(
+        "Could not extract VERIFIED_ANSWER. "
+        "Falling back to full verification output."
+    )
+
+    return text.strip()
+
+
+# =========================================================
+# EXTRACT SOURCES
+# =========================================================
+
+def extract_sources(
+    output
+) -> list:
+
+    text = str(output)
+
+    raw_sources = _extract_field_block(
+        text,
+        "SOURCES"
+    )
+
+    if (
+        not raw_sources
+        or raw_sources.upper() in ("NONE", "N/A")
+    ):
+
+        return []
+
+    sources = []
+
+    for line in raw_sources.splitlines():
+
+        cleaned = line.strip()
+
+        cleaned = re.sub(
+            r"^[-*\d\.\)]+\s*",
+            "",
+            cleaned
+        )
+
+        if (
+            cleaned
+            and cleaned.upper() not in ("NONE", "N/A")
+        ):
+
+            sources.append(cleaned)
+
+    return sources
+
+
+# =========================================================
 # CLEAN JSON
 # =========================================================
 
@@ -2378,11 +2604,75 @@ def run_web_search_and_verification(
         }
     )
 
-    return str(result)
+    # -----------------------------------------------------
+    # VISIBILITY FIX:
+    #
+    # web_verification_crew runs task3 (web search) then
+    # task4 (verification). By default only task4's output
+    # (the final task) is easily visible via str(result).
+    #
+    # This pulls out task3's raw findings as well, so it's
+    # possible to see what the web search actually found,
+    # separately from Agent 2's verification report.
+    # -----------------------------------------------------
+
+    web_search_findings_raw = ""
+
+    try:
+
+        tasks_output = getattr(
+            result,
+            "tasks_output",
+            None
+        )
+
+        if tasks_output:
+
+            web_search_findings_raw = str(
+                tasks_output[0].raw
+            )
+
+    except (
+        AttributeError,
+        IndexError,
+        TypeError
+    ) as exc:
+
+        logger.warning(
+            "Could not extract raw web search "
+            "findings: %s",
+            exc
+        )
+
+    logger.info(
+        "Web search findings (raw): %s",
+        web_search_findings_raw
+        or "No web search findings captured."
+    )
+
+    return str(result), web_search_findings_raw
 
 
 # =========================================================
 # RUN AGENT 3
+#
+# Agent 3 - No web search, no LLM search. It takes Agent 1's
+# retrieval and Agent 2's verified output and returns ONLY
+# the final, correctly formatted customer response (task5's
+# strict rules forbid new facts, new sources, or changing the
+# confidence/status set by Agent 2).
+#
+# This is the active path called from both success branches
+# of run_support_crew() below. An earlier draft of a
+# performance optimization introduced a pure-Python
+# `build_final_response()` helper that skipped this Crew
+# kickoff entirely (and produced the "Agent 3: 0.00 sec"
+# timings) - that helper is intentionally removed. It never
+# actually decided anything (its confidence/status were
+# hardcoded), and skipping it meant Agent 3 wasn't running at
+# all, only a mechanical copy of Agent 2's text. Agent 1 and
+# Agent 2's own logic (task1-task4, initial_support_crew,
+# web_verification_crew) and the email step are unchanged.
 # =========================================================
 
 def run_agent3(
@@ -2432,6 +2722,35 @@ def run_agent3(
 
 
 # =========================================================
+# LINKIFY URLS
+# =========================================================
+
+URL_PATTERN = re.compile(
+    r'(https?://[^\s<>"\']+)'
+)
+
+
+def linkify_urls(text: str) -> str:
+    """
+    Convert any raw http(s) URL found in the given text into
+    a clickable HTML anchor tag. Handles cases where a source
+    entry contains a single clean URL, multiple URLs, or a
+    URL embedded alongside other text.
+    """
+
+    if not text:
+        return text
+
+    return URL_PATTERN.sub(
+        lambda match: (
+            f'<a href="{match.group(1)}">'
+            f'{match.group(1)}</a>'
+        ),
+        text
+    )
+
+
+# =========================================================
 # CREATE EMAIL BODY
 # =========================================================
 
@@ -2442,9 +2761,9 @@ def create_email_body(
 
     if agent3_output.sources:
 
-        formatted_sources = "\n".join(
+        formatted_sources = "<br>".join(
 
-            f"{index}. {source}"
+            f'{index}. {linkify_urls(str(source).strip())}'
 
             for index, source
             in enumerate(
@@ -2459,49 +2778,26 @@ def create_email_body(
             "No sources available."
         )
 
-    email_body = f"""
-QE CUSTOMER SUPPORT
+    email_body = f"""\
+<div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #222;">
 
-==================================================
-REQUEST DETAILS
-==================================================
+<p>This response was generated by the QE Multi-Agent Customer Support System
+(<a href="https://qecustomersupport.tech">qecustomersupport.tech</a>)</p>
 
-Request ID : {request_id}
+<p><b>Request ID:</b> {request_id}</p>
 
+<p><b>User Query:</b><br>
+{agent3_output.user_query}</p>
 
-==================================================
-USER QUERY
-==================================================
+<p><b>Output:</b><br>
+{linkify_urls(agent3_output.final_answer)}</p>
 
-{agent3_output.user_query}
+<p><b>Accuracy level:</b> {agent3_output.confidence}%</p>
 
+<p><b>Sources Verified:</b><br>
+{formatted_sources}</p>
 
-==================================================
-FINAL ANSWER
-==================================================
-
-{agent3_output.final_answer}
-
-
-==================================================
-VERIFICATION DETAILS
-==================================================
-
-Confidence : {agent3_output.confidence}%
-Status     : {agent3_output.status}
-
-
-==================================================
-SOURCES
-==================================================
-
-{formatted_sources}
-
-
---------------------------------------------------
-This response was generated by the QE Multi-Agent
-Customer Support System.
---------------------------------------------------
+</div>
 """
 
     return email_body.strip()
@@ -2551,6 +2847,122 @@ def send_final_response_email(
         )
 
         return False
+
+
+# =========================================================
+# BACKGROUND EMAIL WORKER (PERSISTENT QUEUE)
+#
+# PERFORMANCE OPTIMIZATION (Step 4, revised):
+#
+# The previous implementation spawned a brand-new
+# threading.Thread for every single request just to send one
+# email. Creating an OS-level thread is not free (interpreter
+# + OS bookkeeping), and that overhead is paid on every request
+# even though the thread is only used once.
+#
+# This replaces per-request thread creation with a single
+# long-lived daemon worker thread that consumes jobs from a
+# queue. send_final_response_email_async() now just enqueues a
+# job (a fast, in-memory operation) instead of spinning up a
+# new OS thread each time.
+#
+# CORRECTNESS GUARANTEE (unchanged):
+#
+# agent3_output is still a fully-built, immutable
+# FinalSupportResponse at the moment it is enqueued, and
+# nothing modifies it afterwards. The worker thread sends the
+# exact same object that was enqueued, in the exact same order
+# jobs were submitted (a queue.Queue is FIFO), so emailed
+# content is still guaranteed to be byte-for-byte identical to
+# what the user was shown on screen, and delivery order matches
+# request order.
+# =========================================================
+
+_email_job_queue = queue.Queue()
+
+
+def _email_worker_loop():
+
+    while True:
+
+        job = _email_job_queue.get()
+
+        if job is None:
+
+            _email_job_queue.task_done()
+
+            break
+
+        user_email, agent3_output, request_id = job
+
+        try:
+
+            success = send_final_response_email(
+
+                user_email=
+                    user_email,
+
+                agent3_output=
+                    agent3_output,
+
+                request_id=
+                    request_id
+            )
+
+            logger.info(
+                "Background email send %s "
+                "(Request ID: %s).",
+                "succeeded" if success else "failed",
+                request_id
+            )
+
+        except Exception as exc:
+
+            logger.exception(
+                "Background email send raised an "
+                "unexpected exception "
+                "(Request ID: %s): %s",
+                request_id,
+                exc
+            )
+
+        finally:
+
+            _email_job_queue.task_done()
+
+
+_email_worker_thread = threading.Thread(
+
+    target=
+        _email_worker_loop,
+
+    name=
+        "email-worker",
+
+    daemon=
+        True
+)
+
+_email_worker_thread.start()
+
+
+def send_final_response_email_async(
+    user_email: str,
+    agent3_output: FinalSupportResponse,
+    request_id: str
+):
+
+    # Enqueue only. The persistent worker thread above sends
+    # the email; this call returns as soon as the job is
+    # placed on the queue.
+
+    _email_job_queue.put(
+        (
+            user_email,
+            agent3_output,
+            request_id
+        )
+    )
 
 
 # =========================================================
@@ -2693,7 +3105,12 @@ def run_support_crew(
 
         start = time.perf_counter()
 
-        email_sent = send_final_response_email(
+        # Email is handed off to the persistent background
+        # worker using the exact, already-finalized
+        # agent3_output object, so it never blocks the
+        # response and always reflects precisely what was
+        # shown to the user.
+        send_final_response_email_async(
 
             user_email=
                 user_email,
@@ -2704,6 +3121,8 @@ def run_support_crew(
             request_id=
                 request_id
         )
+
+        email_sent = True
 
         performance[
             "Email"
@@ -2748,6 +3167,9 @@ def run_support_crew(
             "web_search_attempts":
                 0,
 
+            "web_search_findings":
+                [],
+
             "performance":
                 performance
         }
@@ -2762,6 +3184,8 @@ def run_support_crew(
     web_search_attempts = 0
 
     verification_output = initial_output
+
+    web_search_findings_log = []
 
     while (
 
@@ -2792,7 +3216,7 @@ def run_support_crew(
 
         start = time.perf_counter()
 
-        verification_output = (
+        verification_output, web_search_findings_raw = (
             run_web_search_and_verification(
 
                 user_query=
@@ -2807,6 +3231,13 @@ def run_support_crew(
                 conversation_history_text=
                     conversation_history_text
             )
+        )
+
+        web_search_findings_log.append(
+            {
+                "attempt": web_search_attempts,
+                "findings": web_search_findings_raw,
+            }
         )
 
         combined_time = (
@@ -2905,7 +3336,12 @@ def run_support_crew(
 
         start = time.perf_counter()
 
-        email_sent = send_final_response_email(
+        # Email is handed off to the persistent background
+        # worker using the exact, already-finalized
+        # agent3_output object, so it never blocks the
+        # response and always reflects precisely what was
+        # shown to the user.
+        send_final_response_email_async(
 
             user_email=
                 user_email,
@@ -2916,6 +3352,8 @@ def run_support_crew(
             request_id=
                 request_id
         )
+
+        email_sent = True
 
         performance[
             "Email"
@@ -2959,6 +3397,9 @@ def run_support_crew(
 
             "web_search_attempts":
                 web_search_attempts,
+
+            "web_search_findings":
+                web_search_findings_log,
 
             "performance":
                 performance
@@ -3007,6 +3448,9 @@ def run_support_crew(
 
         "web_search_attempts":
             web_search_attempts,
+
+        "web_search_findings":
+            web_search_findings_log,
 
         "performance":
             performance

@@ -78,7 +78,7 @@ def send_email(
         message.attach(
             MIMEText(
                 body,
-                "plain"
+                "html"
             )
         )
 
