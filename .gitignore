@@ -29,3 +29,13 @@ Thumbs.db
 
 echo "Dockerfile" >> .gitignore
 echo "docker-compose.yml" >> .gitignore
+
+# Crew execution state & history files
+crew/conversation_memory.json
+crew/request_counter.json
+crew/request_history.json
+
+# Excel log files & temporary lock files
+support_logs.xlsx
+support_logs_pending.xlsx
+~$*.xlsx
