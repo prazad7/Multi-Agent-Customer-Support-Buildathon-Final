@@ -26,3 +26,6 @@ vector_store/
 # OS
 .DS_Store
 Thumbs.db
+
+echo "Dockerfile" >> .gitignore
+echo "docker-compose.yml" >> .gitignore
