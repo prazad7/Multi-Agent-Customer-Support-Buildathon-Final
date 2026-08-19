@@ -10,6 +10,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 
+
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai_tools import SerperDevTool
 
@@ -18,6 +19,7 @@ from pydantic import BaseModel, Field, ValidationError
 from services.email_service import send_email
 from rag.rag_search import search_knowledge_base
 
+load_dotenv()
 
 # =========================================================
 # LOGGING
@@ -34,8 +36,6 @@ logger = logging.getLogger(__name__)
 # =========================================================
 # ENVIRONMENT
 # =========================================================
-
-load_dotenv()
 
 if not os.getenv("OPENAI_API_KEY"):
     raise ValueError(

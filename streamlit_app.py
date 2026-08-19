@@ -6,6 +6,7 @@ import textwrap
 
 import streamlit as st
 from dotenv import load_dotenv
+load_dotenv()
 
 from crew.support_crew import (
     run_support_crew,
@@ -18,14 +19,6 @@ from crew.support_crew import (
     MAX_WEB_SEARCH_ATTEMPTS,
     MAX_CONVERSATION_TURNS,
 )
-
-
-# =========================================================
-# ENVIRONMENT
-# =========================================================
-
-load_dotenv()
-
 
 # =========================================================
 # PAGE CONFIGURATION
